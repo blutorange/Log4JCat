@@ -9,7 +9,6 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.annotation.Nullable;
 
 public final class StreamFactory {
@@ -22,7 +21,9 @@ public final class StreamFactory {
 	 * @return A random access input stream for log file trimming.
 	 */
 	public static IRandomAccessInputStream open(@Nullable final String string) {
-		return new RandomAccessString(string != null ? string : StringUtils.EMPTY);
+		if (string == null)
+			return new RandomAccessDummy();
+		return new RandomAccessString(string);
 	}
 
 	/**
@@ -51,7 +52,8 @@ public final class StreamFactory {
 	 * @return A random access input stream for log file trimming.
 	 */
 	public static IRandomAccessInputStream open(@Nullable final RandomAccessFile raf) {
-		if (raf == null) return new RandomAccessDummy();
+		if (raf == null)
+			return new RandomAccessDummy();
 		return new RandomAccessFileAdapter(raf);
 	}
 
@@ -77,6 +79,8 @@ public final class StreamFactory {
 	 * @throws IOException When the stream could not be read.
 	 */
 	public static IRandomAccessInputStream open(@Nullable final InputStream stream, @Nullable final Charset charset) throws IOException {
+		if (stream == null)
+			return new RandomAccessDummy();
 		final String string = IOUtils.toString(stream, charset != null ? charset : Charset.defaultCharset());
 		return open(string);
 	}
