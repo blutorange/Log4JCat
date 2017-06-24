@@ -21,6 +21,11 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.homelab.madgaksha.log4jcat.IRandomAccessInput;
+import de.homelab.madgaksha.log4jcat.Log4J;
+import de.homelab.madgaksha.log4jcat.Log4JCat;
+import de.homelab.madgaksha.log4jcat.StreamFactory;
+
 @RunWith(DataDrivenTestRunner.class)
 @DataLoader(filePaths = {"Log4JCatTest.xml"}, loaderType=LoaderType.XML, writeData = false)
 public class Log4JCatTest {
@@ -55,9 +60,9 @@ public class Log4JCatTest {
 			@Param(name="date") final String dateString,
 			@Param(name="shouldPosition") final long shouldPosition) throws IOException, ParseException {
 		final ZonedDateTime dateTime = ZonedDateTime.parse(dateString);
-		final Log4JCatImpl cat = Log4JCat.of(patternLayout).get();
+		final Log4JCat cat = Log4J.of(patternLayout).get();
 		final long t1,t2;
-		try (final IRandomAccessInputStream stream = StreamFactory.open(Log4JCatTest.class.getResourceAsStream(logFilePath))) {
+		try (final IRandomAccessInput stream = StreamFactory.open(Log4JCatTest.class.getResourceAsStream(logFilePath))) {
 			t1 = new Date().getTime();
 			final long isPosition = cat.tail(stream, dateTime);
 			t2 = new Date().getTime();

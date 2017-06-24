@@ -473,7 +473,7 @@ class Log4JReader {
 	 * @param reader Input from which to read data.
 	 * @return The logging event or null if none has been found.
 	 */
-	public LoggingEvent processSingle(final IRandomAccessInputStream input) throws IOException {
+	public LoggingEvent processSingle(final IRandomAccessInput input) throws IOException {
 		Matcher eventMatcher;
 		String line;
 		boolean foundEvent = false;
@@ -506,7 +506,7 @@ class Log4JReader {
 	 * @param reader File to read from. The pointer should initially be at the beginning of a line.
 	 * @return Whether a next event has been found.
 	 */
-	public boolean seekToNextEvent(final IRandomAccessInputStream input) throws IOException {
+	public boolean seekToNextEvent(final IRandomAccessInput input) throws IOException {
 		Matcher eventMatcher;
 		String line;
 		long pos;

@@ -21,30 +21,43 @@ public class Sandbox {
     //   [DEBUG] 2017-06-22 21:57:53,661 TimeClass - Past
     //   [INFO ] 2017-06-23 21:57:53,661 TimeClass - Present
     //   [WARN ] 2017-06-24 21:57:53,661 TimeClass - Future
-    final Log4JCat cat = Log4JCat.of("[%-5p] %d %c - %m%n").get();
+    final Log4JCat cat = Log4J.of("[%-5p] %d %c - %m%n").get();
     // Open a stream for the log file.
-    try (final IRandomAccessInputStream stream = StreamFactory.open(new File("~/mylogfile"))) {
+    try (final IRandomAccessInput input = StreamFactory.open(new File("~/mylogfile"))) {
       // Trim the log file so that it contains only entries more recent than the current date.
       // This returns the offset in the file where the entries start.
-      final long pos = cat.tail(stream, new Date());
+      final long pos = cat.tail(input, new Date());
       // Seek to the starting position.
-      stream.seek(pos);
+      input.seek(pos);
       // And print the all lines from the starting position.
-      System.out.print(stream.readLines());
+      System.out.print(input.readLines());
     }
   }
 }
+```
+
+## Installation
+
+Download [the JAR](https://github.com/blutorange/Log4JCat/blob/master/Log4JCat/release/log4jcat-0.1.jar).
+
+Or clone the project and import it as a Maven project.
+
+```xml
+		<dependency>
+			<groupId>de.homelab.madgaksha</groupId>
+			<artifactId>log4jcat</artifactId>
+			<version>0.1</version>
+		</dependency>
 ```
 
 ## Documentation
 
 ### Trimming
 
-The following methods are available for log file trimming, provided by
-Log4JCatImpl:
+The following methods are available for log file trimming, provided by Log4JCat:
 
-* long tail(IRandomAccessInputStream, long|Date|TemporalAccessor)
-* long head(IRandomAccessInputStream, long|Date|TemporalAccessor) not yet implemented
+* long tail(IRandomAccessInput, long|Date|TemporalAccessor) Returns the position in the stream or file pointing to the first log entry after (or equal to) the given date.
+* long head(IRandomAccessInput, long|Date|TemporalAccessor) Not yet implemented. Returns the position in the stream or file pointing to the last log entry before (or equal to) the given date.
 * more to come?
 
 ### Configuration
@@ -52,9 +65,8 @@ Log4JCatImpl:
 At the least, you need to pass a pattern layout to get a builder for
 configuration.
 
-* Log4JCat.of(String patternLayout) Returns a new builder.
-* Log4JCat.get() Builds a log file trimmer instance and returns it.
-
+* Log4J.of(String patternLayout) Returns a new builder.
+* Log4J.get() Builds a log file trimmer instance and returns it.
 
 There are more options available you can set via the builder before creating
 a log file trimmer instance:

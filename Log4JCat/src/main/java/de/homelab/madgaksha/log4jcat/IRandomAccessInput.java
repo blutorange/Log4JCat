@@ -9,7 +9,7 @@ import java.io.IOException;
  * Implementation are responsible for the encoding.
  * @author madgaksha
  */
-public interface IRandomAccessInputStream extends Closeable {
+public interface IRandomAccessInput extends Closeable {
 	/**
 	 * Sets the offset, measured from the beginning of this stream, at which the
 	 * next read or write occurs. The offset may be set beyond the end of the

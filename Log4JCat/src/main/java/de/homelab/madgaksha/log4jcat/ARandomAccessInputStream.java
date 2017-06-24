@@ -8,7 +8,7 @@ import java.io.IOException;
  * Implementation are responsible for the encoding.
  * @author madgaksha
  */
-abstract class ARandomAccessInputStream implements IRandomAccessInputStream {
+abstract class ARandomAccessInputStream implements IRandomAccessInput {
 	@Override
 	public boolean isEof() throws IOException {
 		return tell() >= length();

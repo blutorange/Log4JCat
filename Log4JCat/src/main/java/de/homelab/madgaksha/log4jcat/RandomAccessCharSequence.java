@@ -4,11 +4,11 @@ import java.io.IOException;
 
 /**
  * Allows the log file trimmer to be used with string.
- * @param string
+ * @param charSequence
  * @author madgaksha
  */
-class RandomAccessString extends ARandomAccessInputStream {
-	private final String string;
+class RandomAccessCharSequence extends ARandomAccessInputStream {
+	private final CharSequence charSequence;
 	private final int length;
 	private int currentPos;
 
@@ -17,8 +17,8 @@ class RandomAccessString extends ARandomAccessInputStream {
 	 * Both a \n and \r\n is recognized as a line break.
 	 * @param string The string to be used.
 	 */
-	public RandomAccessString(final String string) {
-		this.string = string;
+	public RandomAccessCharSequence(final CharSequence string) {
+		this.charSequence = string;
 		this.length = string.length();
 		this.currentPos = 0;
 	}
@@ -40,7 +40,7 @@ class RandomAccessString extends ARandomAccessInputStream {
 		char c;
 		boolean r = false;
 		loop: while (currentPos < length) {
-			c = string.charAt(currentPos++);
+			c = charSequence.charAt(currentPos++);
 			switch (c) {
 			case '\n':
 				if (r)
