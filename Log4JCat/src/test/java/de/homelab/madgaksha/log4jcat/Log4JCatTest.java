@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import de.homelab.madgaksha.log4jcat.IRandomAccessInput;
 import de.homelab.madgaksha.log4jcat.Log4J;
 import de.homelab.madgaksha.log4jcat.Log4JCat;
-import de.homelab.madgaksha.log4jcat.StreamFactory;
+import de.homelab.madgaksha.log4jcat.InputFactory;
 
 @RunWith(DataDrivenTestRunner.class)
 @DataLoader(filePaths = {"Log4JCatTest.xml"}, loaderType=LoaderType.XML, writeData = false)
@@ -62,7 +62,7 @@ public class Log4JCatTest {
 		final ZonedDateTime dateTime = ZonedDateTime.parse(dateString);
 		final Log4JCat cat = Log4J.of(patternLayout).get();
 		final long t1,t2;
-		try (final IRandomAccessInput stream = StreamFactory.open(Log4JCatTest.class.getResourceAsStream(logFilePath))) {
+		try (final IRandomAccessInput stream = InputFactory.open(Log4JCatTest.class.getResourceAsStream(logFilePath))) {
 			t1 = new Date().getTime();
 			final long isPosition = cat.tail(stream, dateTime);
 			t2 = new Date().getTime();

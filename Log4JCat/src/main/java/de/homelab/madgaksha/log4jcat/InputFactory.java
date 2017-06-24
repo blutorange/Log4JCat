@@ -30,8 +30,8 @@ import org.eclipse.jdt.annotation.Nullable;
  * @author madgaksha
  *
  */
-public final class StreamFactory {
-	private StreamFactory() {
+public final class InputFactory {
+	private InputFactory() {
 		// Contains only static factory methods.
 	}
 

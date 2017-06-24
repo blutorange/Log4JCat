@@ -20,6 +20,13 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+/**
+ * The log file trimmer. Instances are constructed via {@link Log4JCat}.
+ * This class provides several methods for searching for log entries
+ * based on their date, such as {@link #tail(IRandomAccessInput, Date)}.
+ * @author madgaksha
+ * @see Log4J
+ */
 public class Log4JCat {
 	private final long threshold;
 	private final String patternLayout;
@@ -35,11 +42,11 @@ public class Log4JCat {
 
 	/**
 	 * Performs a binary search to locate the first log entry beginning at the specified date.
-	 * @param input Log file to trim. Use the methods provided by {@link StreamFactory}.
+	 * @param input Log file to trim. Use the methods provided by {@link InputFactory}.
 	 * @param date The date to search the log file for. Uses the current date when <code>null</code>.
 	 * @return The position in the stream or file pointing to the first log entry after (or equal to) the given date.
 	 * @throws IOException When the log file could not be read.
-	 * @see StreamFactory
+	 * @see InputFactory
 	 */
 	public long tail(@NonNull final IRandomAccessInput input, @Nullable final Date date)
 			throws IOException {
@@ -48,7 +55,7 @@ public class Log4JCat {
 
 	/**
 	 * Performs a binary search to locate the first log entry beginning at the specified date.
-	 * @param input Log file to trim. Use the methods provided by {@link StreamFactory}.
+	 * @param input Log file to trim. Use the methods provided by {@link InputFactory}.
 	 * @param date The date to search the log file for. Uses the current date when <code>null</code>. Please
 	 * note that it should support the field {@link ChronoField#INSTANT_SECONDS}. For example, this field is
 	 * supported by {@link ZonedDateTime}, but not {@link LocalDateTime} as the latter is ambigious due to
@@ -56,7 +63,7 @@ public class Log4JCat {
 	 * to the local default time zone.
 	 * @return The position in the stream or file pointing to the first log entry after (or equal to) the given date.
 	 * @throws IOException When the log file could not be read.
-	 * @see StreamFactory
+	 * @see InputFactory
 	 */
 	public long tail(@NonNull final IRandomAccessInput input, @Nullable final TemporalAccessor date) throws IOException {
 		final long timeStamp = date != null ? timeStampFromTemporal(date) : System.currentTimeMillis();
@@ -65,11 +72,11 @@ public class Log4JCat {
 
 	/**
 	 * Performs a binary search to locate the first log entry beginning at the specified date.
-	 * @param input Log file to trim. Use the methods provided by {@link StreamFactory}.
+	 * @param input Log file to trim. Use the methods provided by {@link InputFactory}.
 	 * @param date The date to search the log file for. This is a unix timestamp (millseconds after January 1st, 1970).
 	 * @return The position in the stream or file pointing to the first log entry after (or equal to) the given date.
 	 * @throws IOException When the log file could not be read.
-	 * @see StreamFactory
+	 * @see InputFactory
 	 */
 	public long tail(@NonNull final IRandomAccessInput input, final long date)
 			throws IOException {
