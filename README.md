@@ -23,7 +23,7 @@ public class Sandbox {
     //   [WARN ] 2017-06-24 21:57:53,661 TimeClass - Future
     final Log4JCat cat = Log4J.of("[%-5p] %d %c - %m%n").get();
     // Open a stream for the log file.
-    try (final IRandomAccessInput input = StreamFactory.open(new File("~/mylogfile"))) {
+    try (final IRandomAccessInput input = InputFactory.open(new File("~/mylogfile"))) {
       // Trim the log file so that it contains only entries more recent than the current date.
       // This returns the offset in the file where the entries start.
       final long pos = cat.tail(input, new Date());
@@ -77,18 +77,18 @@ a log file trimmer instance:
 
 ### Input
 
-To pass the log file, use the StreamFactory, which allows you to use both
+To pass the log file, use the InputFactory, which allows you to use both
 streams, strings, and files as input. They all return an object you can pass
 to the log file trimming methods provided by Log4JCat.
 
 The following factory methods are available:
 
-* StreamFactory.open(File)
-* StreamFactory.open(Path)
-* StreamFactory.open(RandomAccessFile)
-* StreamFactory.open(String) The string represents the log file content.
-* StreamFactory.open(InputStream[, Charset|String])
-* StreamFactory.open(Reader)
+* InputFactory.open(File)
+* InputFactory.open(Path)
+* InputFactory.open(RandomAccessFile)
+* InputFactory.open(String) The string represents the log file content.
+* InputFactory.open(InputStream[, Charset|String])
+* InputFactory.open(Reader)
 
 Please note that the last two methods must read the entire stream into memory
 and are not suitable for large streams.
