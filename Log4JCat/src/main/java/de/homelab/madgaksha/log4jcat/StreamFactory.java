@@ -5,7 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.io.Reader;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
@@ -27,10 +29,21 @@ public final class StreamFactory {
 	}
 
 	/**
-	 * @param string
-	 *            The string containing the log file. Interpreted as an empty
-	 *            file when <code>null</code> or when the file could not be
-	 *            found.
+	 * @param path
+	 *            Path to the log file. Interpreted as an empty file when
+	 *            <code>null</code> or when the file could not be found.
+	 * @return A random access input stream for log file trimming.
+	 */
+	public static IRandomAccessInputStream open(@Nullable final Path path)  {
+		if (path == null)
+			return new RandomAccessDummy();
+		return open(path.toFile());
+	}
+
+	/**
+	 * @param file
+	 *            The log file. Interpreted as an empty file when <code>null</code>
+	 *            or when the file could not be found.
 	 * @return A random access input stream for log file trimming.
 	 */
 	@SuppressWarnings("resource") // We only open the stream.
@@ -94,5 +107,19 @@ public final class StreamFactory {
 	 */
 	public static IRandomAccessInputStream open(@Nullable final InputStream stream) throws IOException {
 		return open(stream, (Charset)null);
+	}
+
+	/**
+	 * Use carefully. As we need random access, the entire reader needs to be read
+	 * into memory.
+	 * @param reader Reader containing the log file. Interpreted as an empty reader when <code>null</code>.
+	 * @return A random access input stream for log file trimming.
+	 * @throws IOException When the stream could not be read.
+	 */
+	public static IRandomAccessInputStream open(@Nullable final Reader reader) throws IOException {
+		if (reader == null)
+			return new RandomAccessDummy();
+		final String string = IOUtils.toString(reader);
+		return open(string);
 	}
 }

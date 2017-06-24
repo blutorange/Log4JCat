@@ -10,13 +10,16 @@ package de.homelab.madgaksha.log4jcat;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
+import java.util.TimeZone;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -289,7 +292,7 @@ class Log4JReader {
 
 	public static final int MISSING_FILE_RETRY_MILLIS = 10000;
 
-	public Log4JReader(final String patternLayout) {
+	public Log4JReader(final String patternLayout, final Locale locale, final TimeZone timeZone) {
 		keywords.add(TIMESTAMP);
 		keywords.add(LOGGER);
 		keywords.add(LEVEL);
@@ -302,8 +305,12 @@ class Log4JReader {
 		keywords.add(NDC);
 		logFormat = getLogFormatFromPatternLayout(patternLayout);
 		timestampFormat = getTimeStampFormat(patternLayout);
-		initialize();
+		initialize(locale, timeZone);
 		createPattern();
+	}
+
+	public Log4JReader(final String patternLayout) {
+		this(patternLayout, Locale.ENGLISH, TimeZone.getTimeZone(ZoneOffset.UTC));
 	}
 
 	/**
@@ -584,7 +591,7 @@ class Log4JReader {
 	 * Build the regular expression needed to parse log entries
 	 *
 	 */
-	private void initialize() {
+	private void initialize(final Locale locale, final TimeZone timeZone) {
 		currentMap = new HashMap<>();
 		additionalLines = new ArrayList<>();
 		additionalLinesStack = new Stack<>();
@@ -592,7 +599,8 @@ class Log4JReader {
 
 		if (timestampFormat != null) {
 			dateFormat = new SimpleDateFormat(
-					quoteTimeStampChars(timestampFormat));
+					quoteTimeStampChars(timestampFormat), locale);
+			dateFormat.setTimeZone(timeZone);
 			timestampPatternText = convertTimestamp();
 		}
 

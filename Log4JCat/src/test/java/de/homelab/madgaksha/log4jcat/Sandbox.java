@@ -1,22 +1,23 @@
 package de.homelab.madgaksha.log4jcat;
 
-
 import java.io.IOException;
-import java.util.Date;
-
-import de.homelab.madgaksha.log4jcat.IRandomAccessInputStream;
-import de.homelab.madgaksha.log4jcat.Log4JCat;
-import de.homelab.madgaksha.log4jcat.StreamFactory;
+import java.time.ZonedDateTime;
 
 public class Sandbox {
 	public static void main(final String[] args) throws IOException {
-		final Log4JCat cat = new Log4JCat("[%-5p] %d %c - %m%n");
+		final Log4JCatImpl cat = Log4JCat.of("[%-5p] %d %c - %m%n").get();
+		final ZonedDateTime date = ZonedDateTime.parse("2017-12-26T13:00:00+00:00[UTC]");
+//		System.out.println("Open stream");
+//		try (final IRandomAccessInputStream stream = StreamFactory.open(new File("/tmp/huge"))) {
+//			System.out.println("Tail");
+//			final long pos = cat.tail(stream, date);
+//			System.out.println("Done");
+//			System.out.println(pos);
+//		}
+
 		try (final IRandomAccessInputStream stream = StreamFactory.open(Sandbox.class.getResourceAsStream("/logfile001"))) {
-//		try (final IRandomAccessInputStream stream = StreamFactory.open(new RandomAccessFile(new File("/tmp/logfile001.log"), "r"))) {
-			final long pos = cat.tail(stream, new Date());
+			final long pos = cat.tail(stream, date);
 			System.out.println(pos);
-			stream.seek(pos);
-			System.out.print(stream.readLines());
 		}
 	}
 }
