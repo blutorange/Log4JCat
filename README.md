@@ -26,7 +26,7 @@ public class Sandbox {
     try (final IRandomAccessInput input = InputFactory.open(new File("~/mylogfile"))) {
       // Trim the log file so that it contains only entries more recent than the current date.
       // This returns the offset in the file where the entries start.
-      final long pos = cat.tail(input, new Date());
+      final long pos = cat.tail(input, Timestamp.now());
       // Seek to the starting position.
       input.seek(pos);
       // And print the all lines from the starting position.
@@ -92,9 +92,9 @@ to the log file trimming methods provided by Log4JCat.
 
 The following factory methods are available:
 
-* InputFactory.open(File)
-* InputFactory.open(Path)
-* InputFactory.open(RandomAccessFile)
+* InputFactory.open(File[, Charset|String])
+* InputFactory.open(Path[, Charset|String])
+* InputFactory.open(RandomAccessFile[, Charset|String])
 * InputFactory.open(String) The string represents the log file content.
 * InputFactory.open(InputStream[, Charset|String])
 * InputFactory.open(Reader)
