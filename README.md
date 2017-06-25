@@ -56,9 +56,18 @@ Or clone the project and import it as a Maven project.
 
 The following methods are available for log file trimming, provided by Log4JCat:
 
-* long tail(IRandomAccessInput, long|Date|TemporalAccessor) Returns the position in the stream or file pointing to the first log entry after (or equal to) the given date.
-* long head(IRandomAccessInput, long|Date|TemporalAccessor) Not yet implemented. Returns the position in the stream or file pointing to the last log entry before (or equal to) the given date.
-* more to come?
+* long find(IRandomAccessInput, long) Takes a log file and a UNIX timestamp. Some log entries lie before the given date, and some lie after the given date. This method finds the first log entry that lies after or on the given date. Call this method twice to perform a head-tail trim.
+
+### Timestamp
+
+Timestamp is a small set of utility methods for using other date-time objects.
+Each method returns a UNIX timestamp.
+
+* Timestamp.now()
+* Timestamp.of(java.util.Date)
+* Timestamp.of(java.util.Calendar)
+* Timestamp.of(java.time.temporal.TemporalAccessor) Such as a ZonedDateTime or Instant.
+* Timestamp.of(org.joda.time.ReadableInstant) Such as a org.joda.time.DateTime.
 
 ### Configuration
 

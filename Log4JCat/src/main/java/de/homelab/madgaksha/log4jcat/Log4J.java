@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * @see Log4JCat
  * @author madgaksha
  */
-public class Log4J {
+public final class Log4J {
 	private static long MIN_THRESHOLD = 1000L; // 1 KB
 	private static long DEFAULT_THRESHOLD = 10000L; // 10 KB
 
@@ -103,7 +103,8 @@ public class Log4J {
 			timeZone = TimeZone.getTimeZone(ZoneOffset.UTC);
 		if (locale == null)
 			locale = Locale.ENGLISH;
-		return new Log4JCat(patternLayout, locale, timeZone, threshold);
+		final ILogReaderFactory factory = new Log4JReaderFactory(patternLayout, locale, timeZone);
+		return new Log4JCat(factory, threshold);
 	}
 
 	/**

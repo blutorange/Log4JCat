@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 
@@ -48,25 +49,91 @@ public final class InputFactory {
 	}
 
 	/**
+	 * Uses the default charset.
+	 *
 	 * @param path
 	 *            Path to the log file. Interpreted as an empty file when
 	 *            <code>null</code> or when the file could not be found.
 	 * @return A random access input for log file trimming.
+	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
-	public static IRandomAccessInput open(@Nullable final Path path) {
+	public static IRandomAccessInput open(@Nullable final Path path) throws UnsupportedEncodingException {
+		return open(path.toFile(), getCharset(null));
+	}
+
+	/**
+	 * @param path
+	 *            Path to the log file. Interpreted as an empty file when
+	 *            <code>null</code> or when the file could not be found.
+	 * @param encoding
+	 *            The encoding the file uses. Uses the default encoding when
+	 *            <code>null</code>.
+	 * @return A random access input for log file trimming.
+	 * @throws UnsupportedEncodingException When the charset is not supported.
+	 */
+	public static IRandomAccessInput open(@Nullable final Path path, @Nullable final String encoding)
+			throws UnsupportedEncodingException {
+		return open(path, getCharset(encoding));
+	}
+
+	/**
+	 * @param path
+	 *            Path to the log file. Interpreted as an empty file when
+	 *            <code>null</code> or when the file could not be found.
+	 * @param charset
+	 *            The charset the file uses. Uses the default charset when
+	 *            <code>null</code>.
+	 * @return A random access input for log file trimming.
+	 * @throws UnsupportedEncodingException When the charset is not supported.
+	 */
+	public static IRandomAccessInput open(@Nullable final Path path, @Nullable final Charset charset)
+			throws UnsupportedEncodingException {
 		if (path == null)
 			return new RandomAccessDummy();
-		return open(path.toFile());
+		return open(path.toFile(), charset);
+	}
+
+	/**
+	 * Uses the default charset.
+	 *
+	 * @param file
+	 *            The log file. Interpreted as an empty file when
+	 *            <code>null</code> or when the file could not be found.
+	 * @return A random access input for log file trimming.
+	 * @throws UnsupportedEncodingException When the charset is not supported.
+	 */
+	public static IRandomAccessInput open(@Nullable final File file) throws UnsupportedEncodingException {
+		return open(file, getCharset(null));
 	}
 
 	/**
 	 * @param file
 	 *            The log file. Interpreted as an empty file when
 	 *            <code>null</code> or when the file could not be found.
+	 * @param encoding
+	 *            The encoding of this file. Uses the default encoding when
+	 *            <code>null</code>.
 	 * @return A random access input for log file trimming.
+	 * @throws UnsupportedEncodingException When the charset is not supported.
+	 */
+	public static IRandomAccessInput open(@Nullable final File file, @Nullable final String encoding)
+			throws UnsupportedEncodingException {
+		return open(file, getCharset(encoding));
+	}
+
+	/**
+	 * @param file
+	 *            The log file. Interpreted as an empty file when
+	 *            <code>null</code> or when the file could not be found.
+	 * @param charset
+	 *            The charset of this file. Uses the default charset when
+	 *            <code>null</code>.
+	 * @return A random access input for log file trimming.
+	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
 	@SuppressWarnings("resource") // We only open the stream.
-	public static IRandomAccessInput open(@Nullable final File file) {
+	public static IRandomAccessInput open(@Nullable final File file, @Nullable final Charset charset)
+			throws UnsupportedEncodingException {
 		if (file == null)
 			return new RandomAccessDummy();
 		final RandomAccessFile raf;
@@ -76,18 +143,53 @@ public final class InputFactory {
 		catch (@SuppressWarnings("unused") final FileNotFoundException ignored) {
 			return new RandomAccessDummy();
 		}
-		return new RandomAccessFileAdapter(raf);
+		return open(raf, charset);
+	}
+
+	/**
+	 * Uses the default encoding.
+	 *
+	 * @param randomAccessFile
+	 *            The log file. Interpreted as an empty file when
+	 *            <code>null</code>.
+	 * @return A random access input for log file trimming.
+	 * @throws UnsupportedEncodingException When the charset is not supported.
+	 */
+	public static IRandomAccessInput open(@Nullable final RandomAccessFile randomAccessFile)
+			throws UnsupportedEncodingException {
+		return open(randomAccessFile, getCharset(null));
 	}
 
 	/**
 	 * @param randomAccessFile
-	 *            The log file. Interpreted as an empty file when <code>null</code>.
+	 *            The log file. Interpreted as an empty file when
+	 *            <code>null</code>.
+	 * @param encoding
+	 *            The encoding of this file. Uses the default encoding when
+	 *            <code>null</code>.
 	 * @return A random access input for log file trimming.
+	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
-	public static IRandomAccessInput open(@Nullable final RandomAccessFile randomAccessFile) {
+	public static IRandomAccessInput open(@Nullable final RandomAccessFile randomAccessFile, final String encoding)
+			throws UnsupportedEncodingException {
+		return open(randomAccessFile, getCharset(encoding));
+	}
+
+	/**
+	 * @param randomAccessFile
+	 *            The log file. Interpreted as an empty file when
+	 *            <code>null</code>.
+	 * @param charset
+	 *            The charset of this file. Uses the default charset when
+	 *            <code>null</code>.
+	 * @return A random access input for log file trimming.
+	 * @throws UnsupportedEncodingException When the charset is not supported.
+	 */
+	public static IRandomAccessInput open(@Nullable final RandomAccessFile randomAccessFile,
+			@Nullable final Charset charset) throws UnsupportedEncodingException {
 		if (randomAccessFile == null)
 			return new RandomAccessDummy();
-		return new RandomAccessFileAdapter(randomAccessFile);
+		return ARandomAccessFileForwarder.of(randomAccessFile, charset != null ? charset : Charset.defaultCharset());
 	}
 
 	/**
@@ -106,8 +208,7 @@ public final class InputFactory {
 	 */
 	public static IRandomAccessInput open(@Nullable final InputStream stream, @Nullable final String encoding)
 			throws IOException {
-		final Charset charset = encoding == null ? Charset.defaultCharset() : Charsets.toCharset(encoding);
-		return open(stream, charset);
+		return open(stream, getCharset(encoding));
 	}
 
 	/**
@@ -163,5 +264,9 @@ public final class InputFactory {
 			return new RandomAccessDummy();
 		final String string = IOUtils.toString(reader);
 		return open(string);
+	}
+
+	private static Charset getCharset(final String encoding) {
+		return encoding != null ? Charsets.toCharset(encoding) : Charset.defaultCharset();
 	}
 }

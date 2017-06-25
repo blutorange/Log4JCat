@@ -7,7 +7,7 @@ import java.io.IOException;
  * @param string
  * @author madgaksha
  */
-class RandomAccessDummy extends ARandomAccessInputStream {
+class RandomAccessDummy extends ARandomAccessInput {
 	/**
 	 * Constructs a new reader from the given string.
 	 * Both a \n and \r\n is recognized as a line break.

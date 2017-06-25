@@ -7,7 +7,6 @@
 
 package de.homelab.madgaksha.log4jcat;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
@@ -24,7 +23,6 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.input.ReversedLinesFileReader;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.OptionConverter;
@@ -48,96 +46,10 @@ import org.apache.log4j.pattern.RelativeTimePatternConverter;
 import org.apache.log4j.pattern.SequenceNumberPatternConverter;
 import org.apache.log4j.pattern.ThreadPatternConverter;
 import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
+import org.slf4j.event.LoggingEvent;
 
-class Log4JReader {
-
-	private static String getLogFormatFromPatternLayout(final String patternLayout) {
-		final String input = OptionConverter.convertSpecialChars(patternLayout);
-		final List<LoggingEventPatternConverter> converters = new ArrayList<>();
-		final List<FormattingInfo> fields = new ArrayList<>();
-		final Map<?,?> converterRegistry = null;
-
-		PatternParser.parse(input, converters, fields, converterRegistry, PatternParser.getPatternLayoutRules());
-		return getFormatFromConverters(converters);
-	}
-
-	private static String getTimeStampFormat(final String patternLayout) {
-		final int basicIndex = patternLayout.indexOf("%d");
-		if (basicIndex < 0) {
-			return null;
-		}
-
-		final int index = patternLayout.indexOf("%d{");
-		// %d - default
-		if (index < 0) {
-			return "yyyy-MM-dd HH:mm:ss,SSS";
-		}
-
-		final int length = patternLayout.substring(index).indexOf("}");
-		final String timestampFormat = patternLayout.substring(index + "%d{".length(), index + length);
-		if (timestampFormat.equals("ABSOLUTE")) {
-			return "HH:mm:ss,SSS";
-		}
-		if (timestampFormat.equals("ISO8601")) {
-			return "yyyy-MM-dd HH:mm:ss,SSS";
-		}
-		if (timestampFormat.equals("DATE")) {
-			return "dd MMM yyyy HH:mm:ss,SSS";
-		}
-		return timestampFormat;
-	}
-
-	private static String getFormatFromConverters(final List<LoggingEventPatternConverter> converters) {
-		final StringBuffer buffer = new StringBuffer();
-		for (final LoggingEventPatternConverter converter : converters) {
-			if (converter instanceof DatePatternConverter) {
-				buffer.append("TIMESTAMP");
-			} else if (converter instanceof MessagePatternConverter) {
-				buffer.append("MESSAGE");
-			} else if (converter instanceof LoggerPatternConverter) {
-				buffer.append("LOGGER");
-			} else if (converter instanceof ClassNamePatternConverter) {
-				buffer.append("CLASS");
-			} else if (converter instanceof RelativeTimePatternConverter) {
-				buffer.append("PROP(RELATIVETIME)");
-			} else if (converter instanceof ThreadPatternConverter) {
-				buffer.append("THREAD");
-			} else if (converter instanceof NDCPatternConverter) {
-				buffer.append("NDC");
-			} else if (converter instanceof LiteralPatternConverter) {
-				final LiteralPatternConverter literal = (LiteralPatternConverter) converter;
-				// format shouldn't normally take a null, but we're getting a
-				// literal, so passing in the buffer will work
-				literal.format(null, buffer);
-			} else if (converter instanceof SequenceNumberPatternConverter) {
-				buffer.append("PROP(log4jid)");
-			} else if (converter instanceof LevelPatternConverter) {
-				buffer.append("LEVEL");
-			} else if (converter instanceof MethodLocationPatternConverter) {
-				buffer.append("METHOD");
-			} else if (converter instanceof FullLocationPatternConverter) {
-				buffer.append("PROP(locationInfo)");
-			} else if (converter instanceof LineLocationPatternConverter) {
-				buffer.append("LINE");
-			} else if (converter instanceof FileLocationPatternConverter) {
-				buffer.append("FILE");
-			} else if (converter instanceof PropertiesPatternConverter) {
-				// PropertiesPatternConverter propertiesConverter =
-				// (PropertiesPatternConverter) converter;
-				// String option = propertiesConverter.getOption();
-				// if (option != null && option.length() > 0) {
-				// buffer.append("PROP(" + option + ")");
-				// } else {
-				buffer.append("PROP(PROPERTIES)");
-				// }
-			} else if (converter instanceof LineSeparatorPatternConverter) {
-				// done
-			}
-		}
-		return buffer.toString();
-	}
+class Log4JReader implements ILogReader {
 
 	/**
 	 * LogFilePatternReceiver can parse and tail log files, converting entries
@@ -224,8 +136,8 @@ class Log4JReader {
 	 * <b>Example receiver configuration settings</b> (add these as params,
 	 * specifying a LogFilePatternReceiver 'plugin'):<br>
 	 * param: "timestampFormat" value="yyyy-MM-d HH:mm:ss,SSS"<br>
-	 * param: "logFormat"
-	 * value="PROP(RELATIVETIME) [THREAD] LEVEL LOGGER * - MESSAGE"<br>
+	 * param: "logFormat" value="PROP(RELATIVETIME) [THREAD] LEVEL LOGGER * -
+	 * MESSAGE"<br>
 	 * param: "fileURL" value="file:///c:/events.log"<br>
 	 * param: "tailing" value="true"
 	 * <p>
@@ -264,10 +176,8 @@ class Log4JReader {
 	private static final String REGEXP_GREEDY_WILDCARD = ".*";
 	private static final String PATTERN_WILDCARD = "*";
 	private static final String NOSPACE_GROUP = "(\\S*\\s*?)";
-	private static final String DEFAULT_GROUP = "(" + REGEXP_DEFAULT_WILDCARD
-			+ ")";
-	private static final String GREEDY_GROUP = "(" + REGEXP_GREEDY_WILDCARD
-			+ ")";
+	private static final String DEFAULT_GROUP = "(" + REGEXP_DEFAULT_WILDCARD + ")";
+	private static final String GREEDY_GROUP = "(" + REGEXP_GREEDY_WILDCARD + ")";
 	private static final String MULTIPLE_SPACES_REGEXP = "[ ]+";
 	private final String newLine = System.getProperty("line.separator");
 
@@ -278,8 +188,7 @@ class Log4JReader {
 	private final String logFormat;
 
 	private static final String VALID_DATEFORMAT_CHARS = "GyMwWDdFEaHkKhmsSzZ";
-	private static final String VALID_DATEFORMAT_CHAR_PATTERN = "["
-			+ VALID_DATEFORMAT_CHARS + "]";
+	private static final String VALID_DATEFORMAT_CHAR_PATTERN = "[" + VALID_DATEFORMAT_CHARS + "]";
 
 	private HashMap<String, String> currentMap;
 	private ArrayList<String> additionalLines;
@@ -375,8 +284,7 @@ class Log4JReader {
 		}
 		// the current map contains fields - build an event
 		if (additionalLines.size() > 0) {
-			currentMap.put(MESSAGE,
-					buildMessage(currentMap.get(MESSAGE)));
+			currentMap.put(MESSAGE, buildMessage(currentMap.get(MESSAGE)));
 		}
 		final LoggingEvent event = convertToEvent(currentMap);
 		currentMap.clear();
@@ -392,87 +300,14 @@ class Log4JReader {
 		// the current map contains fields - build an event
 		// messages are listed before exceptions in additional lines
 		if (additionalLinesStack.size() > 0) {
-			currentMap.put(MESSAGE,
-					buildMessageStack(currentMap.get(MESSAGE)));
+			currentMap.put(MESSAGE, buildMessageStack(currentMap.get(MESSAGE)));
 		}
 		final LoggingEvent event = convertToEvent(currentMap);
 		additionalLinesStack.clear();
 		return event;
 	}
 
-	/**
-	 * Read, parse and optionally tail the log file, converting entries into
-	 * logging events.
-	 *
-	 * A runtimeException is thrown if the logFormat pattern is malformed.
-	 *
-	 * @param bufferedReader
-	 * @throws IOException
-	 */
-	private void process(final BufferedReader bufferedReader, final ILoggerCallback callback)
-			throws IOException {
-//		LoggingEvent event;
-//		while ( (event = processSingle(bufferedReader)) != null) {
-//			if (!callback.doPost(event)) return;
-//		}
-		Matcher eventMatcher;
-		String line;
-		while ((line = bufferedReader.readLine()) != null) {
-			// skip empty line entries
-			eventMatcher = regexpPattern.matcher(line);
-			if (eventMatcher.matches()) {
-				// build an event from the previous match (held in current map)
-				final LoggingEvent event = buildEvent();
-				if (event != null && !callback.doPost(event))
-					return;
-				currentMap.putAll(processEvent(eventMatcher.toMatchResult()));
-			} else {
-				additionalLines.add(line);
-			}
-		}
-
-		// process last event if one exists
-		final LoggingEvent event = buildEvent();
-		if (event != null && !callback.doPost(event))
-			return;
-	}
-
-	/**
-	 * Read, parse and optionally tail the log file, converting entries into
-	 * logging events.
-	 *
-	 * A runtimeException is thrown if the logFormat pattern is malformed.
-	 *
-	 * @param bufferedReader
-	 * @throws IOException
-	 */
-	private void processReverse(final ReversedLinesFileReader reader,
-			final ILoggerCallback callback) throws IOException {
-		Matcher eventMatcher;
-		String line;
-		while ((line = reader.readLine()) != null) {
-			eventMatcher = regexpPattern.matcher(line);
-			if (eventMatcher.matches()) {
-				// build an event from the previous match (held in current map)
-				final LoggingEvent event = buildEventStack(processEvent(eventMatcher
-						.toMatchResult()));
-				if (event != null && !callback.doPost(event))
-					return;
-			} else {
-				additionalLinesStack.push(line);
-			}
-		}
-
-		// process last event if one exists
-		final LoggingEvent event = buildEvent();
-		if (event != null && !callback.doPost(event))
-			return;
-	}
-
-	/** Reads and returns the next logging event, skipping the current event.
-	 * @param reader Input from which to read data.
-	 * @return The logging event or null if none has been found.
-	 */
+	@Override
 	public LoggingEvent processSingle(final IRandomAccessInput input) throws IOException {
 		Matcher eventMatcher;
 		String line;
@@ -485,7 +320,7 @@ class Log4JReader {
 			eventMatcher = regexpPattern.matcher(line);
 			if (eventMatcher.matches()) {
 				// build an event from the previous match (held in current map)
-				if (foundEvent){
+				if (foundEvent) {
 					break;
 				}
 				foundEvent = true;
@@ -502,10 +337,7 @@ class Log4JReader {
 		return foundEvent ? buildEvent() : null;
 	}
 
-	/** Seeks to the next logging event and positions the file pointer at the beginning of the line.
-	 * @param reader File to read from. The pointer should initially be at the beginning of a line.
-	 * @return Whether a next event has been found.
-	 */
+	@Override
 	public boolean seekToNextEvent(final IRandomAccessInput input) throws IOException {
 		Matcher eventMatcher;
 		String line;
@@ -523,28 +355,6 @@ class Log4JReader {
 		}
 		return false;
 	}
-
-	/** Reads and returns the last logging event.
-	 * @param reader Input from which to read data.
-	 * @return The logging event or null if none has been found.
-	 */
-	public LoggingEvent processSingleReverse(final ReversedLinesFileReader reader) throws IOException {
-		LoggingEvent event = null;
-		Matcher eventMatcher;
-		String line;
-		additionalLinesStack.clear();
-		currentMap.clear();
-		while ((line = reader.readLine()) != null) {
-			eventMatcher = regexpPattern.matcher(line);
-			if (eventMatcher.matches()) {
-				event = buildEventStack(processEvent(eventMatcher.toMatchResult()));
-				break;
-			}
-			additionalLinesStack.push(line);
-		}
-		return event;
-	}
-
 
 	private void createPattern() {
 		regexpPattern = Pattern.compile(regexp);
@@ -580,8 +390,7 @@ class Log4JReader {
 		// some locales (for example, French) generate timestamp text with
 		// characters not included in \w -
 		// now using \S (all non-whitespace characters) instead of /w
-		String result = timestampFormat.replaceAll(
-				VALID_DATEFORMAT_CHAR_PATTERN + "+", "\\\\S+");
+		String result = timestampFormat.replaceAll(VALID_DATEFORMAT_CHAR_PATTERN + "+", "\\\\S+");
 		// make sure dots in timestamp are escaped
 		result = result.replaceAll(Pattern.quote("."), "\\\\.");
 		return result;
@@ -598,8 +407,7 @@ class Log4JReader {
 		matchingKeywords = new ArrayList<>();
 
 		if (timestampFormat != null) {
-			dateFormat = new SimpleDateFormat(
-					quoteTimeStampChars(timestampFormat), locale);
+			dateFormat = new SimpleDateFormat(quoteTimeStampChars(timestampFormat), locale);
 			dateFormat.setTimeZone(timeZone);
 			timestampPatternText = convertTimestamp();
 		}
@@ -615,20 +423,18 @@ class Log4JReader {
 		// we'll rebuild the pattern later
 		final ArrayList<String> propertyNames = new ArrayList<>();
 		while (index > -1) {
-			if (current.indexOf(PROP_START) > -1
-					&& current.indexOf(PROP_END) > -1) {
+			if (current.indexOf(PROP_START) > -1 && current.indexOf(PROP_END) > -1) {
 				index = current.indexOf(PROP_START);
-				final String longPropertyName = current.substring(
-						current.indexOf(PROP_START),
+				final String longPropertyName = current.substring(current.indexOf(PROP_START),
 						current.indexOf(PROP_END) + 1);
 				final String shortProp = getShortPropertyName(longPropertyName);
 				buildingKeywords.add(shortProp);
 				propertyNames.add(longPropertyName);
-				current = current.substring(longPropertyName.length() + 1
-						+ index);
+				current = current.substring(longPropertyName.length() + 1 + index);
 				newPattern = singleReplace(newPattern, longPropertyName,
 						new Integer(buildingKeywords.size() - 1).toString());
-			} else {
+			}
+			else {
 				// no properties
 				index = -1;
 			}
@@ -648,8 +454,7 @@ class Log4JReader {
 			final int index2 = newPattern.indexOf(keyword);
 			if (index2 > -1) {
 				buildingKeywords.add(keyword);
-				newPattern = singleReplace(newPattern, keyword, new Integer(
-						buildingKeywords.size() - 1).toString());
+				newPattern = singleReplace(newPattern, keyword, new Integer(buildingKeywords.size() - 1).toString());
 			}
 		}
 
@@ -659,10 +464,10 @@ class Log4JReader {
 			final String thisValue = String.valueOf(newPattern.substring(i, i + 1));
 			if (isInteger(thisValue)) {
 				buildingInt = buildingInt + thisValue;
-			} else {
+			}
+			else {
 				if (isInteger(buildingInt)) {
-					matchingKeywords.add(buildingKeywords.get(Integer
-							.parseInt(buildingInt)));
+					matchingKeywords.add(buildingKeywords.get(Integer.parseInt(buildingInt)));
 				}
 				// reset
 				buildingInt = "";
@@ -671,34 +476,30 @@ class Log4JReader {
 
 		// if the very last value is an int, make sure to add it
 		if (isInteger(buildingInt)) {
-			matchingKeywords.add(buildingKeywords.get(Integer
-					.parseInt(buildingInt)));
+			matchingKeywords.add(buildingKeywords.get(Integer.parseInt(buildingInt)));
 		}
 
 		newPattern = replaceMetaChars(newPattern);
 
 		// compress one or more spaces in the pattern into the [ ]+ regexp
 		// (supports padding of level in log files)
-		newPattern = newPattern.replaceAll(MULTIPLE_SPACES_REGEXP,
-				MULTIPLE_SPACES_REGEXP);
-		newPattern = newPattern.replaceAll(Pattern.quote(PATTERN_WILDCARD),
-				REGEXP_DEFAULT_WILDCARD);
+		newPattern = newPattern.replaceAll(MULTIPLE_SPACES_REGEXP, MULTIPLE_SPACES_REGEXP);
+		newPattern = newPattern.replaceAll(Pattern.quote(PATTERN_WILDCARD), REGEXP_DEFAULT_WILDCARD);
 		// use buildingKeywords here to ensure correct order
 		for (int i = 0; i < buildingKeywords.size(); i++) {
 			final String keyword = buildingKeywords.get(i);
 			// make the final keyword greedy (we're assuming it's the message)
 			if (i == (buildingKeywords.size() - 1)) {
-				newPattern = singleReplace(newPattern, String.valueOf(i),
-						GREEDY_GROUP);
-			} else if (TIMESTAMP.equals(keyword)) {
-				newPattern = singleReplace(newPattern, String.valueOf(i), "("
-						+ timestampPatternText + ")");
-			} else if (LOGGER.equals(keyword) || LEVEL.equals(keyword)) {
-				newPattern = singleReplace(newPattern, String.valueOf(i),
-						NOSPACE_GROUP);
-			} else {
-				newPattern = singleReplace(newPattern, String.valueOf(i),
-						DEFAULT_GROUP);
+				newPattern = singleReplace(newPattern, String.valueOf(i), GREEDY_GROUP);
+			}
+			else if (TIMESTAMP.equals(keyword)) {
+				newPattern = singleReplace(newPattern, String.valueOf(i), "(" + timestampPatternText + ")");
+			}
+			else if (LOGGER.equals(keyword) || LEVEL.equals(keyword)) {
+				newPattern = singleReplace(newPattern, String.valueOf(i), NOSPACE_GROUP);
+			}
+			else {
+				newPattern = singleReplace(newPattern, String.valueOf(i), DEFAULT_GROUP);
 			}
 		}
 
@@ -709,7 +510,8 @@ class Log4JReader {
 		try {
 			Integer.parseInt(value);
 			return true;
-		} catch (@SuppressWarnings("unused") final NumberFormatException ignored) {
+		}
+		catch (@SuppressWarnings("unused") final NumberFormatException ignored) {
 			return false;
 		}
 	}
@@ -721,8 +523,7 @@ class Log4JReader {
 		boolean lastCharIsDateFormat = false;
 		for (int i = 0; i < input.length(); i++) {
 			final String thisVal = input.substring(i, i + 1);
-			final boolean thisCharIsDateFormat = VALID_DATEFORMAT_CHARS
-					.contains(thisVal);
+			final boolean thisCharIsDateFormat = VALID_DATEFORMAT_CHARS.contains(thisVal);
 			// we have encountered a non-dateformat char
 			if (!thisCharIsDateFormat && (i == 0 || lastCharIsDateFormat)) {
 				result.append("'");
@@ -742,8 +543,7 @@ class Log4JReader {
 		return result.toString();
 	}
 
-	private String singleReplace(String inputString, final String oldString,
-			final String newString) {
+	private String singleReplace(String inputString, final String oldString, final String newString) {
 		final int propLength = oldString.length();
 		final int startPos = inputString.indexOf(oldString);
 		if (startPos == -1) {
@@ -752,20 +552,17 @@ class Log4JReader {
 		if (startPos == 0) {
 			inputString = inputString.substring(propLength);
 			inputString = newString + inputString;
-		} else {
-			inputString = inputString.substring(0, startPos) + newString
-					+ inputString.substring(startPos + propLength);
+		}
+		else {
+			inputString = inputString.substring(0, startPos) + newString + inputString.substring(startPos + propLength);
 		}
 		return inputString;
 	}
 
 	private String getShortPropertyName(final String longPropertyName) {
-		final String currentProp = longPropertyName.substring(longPropertyName
-				.indexOf(PROP_START));
-		final String prop = currentProp.substring(0,
-				currentProp.indexOf(PROP_END) + 1);
-		final String shortProp = prop.substring(PROP_START.length(),
-				prop.length() - 1);
+		final String currentProp = longPropertyName.substring(longPropertyName.indexOf(PROP_START));
+		final String prop = currentProp.substring(0, currentProp.indexOf(PROP_END) + 1);
+		final String shortProp = prop.substring(PROP_START.length(), prop.length() - 1);
 		return shortProp;
 	}
 
@@ -833,9 +630,9 @@ class Log4JReader {
 
 		if ((dateFormat != null) && fieldMap.containsKey(TIMESTAMP)) {
 			try {
-				timeStamp = dateFormat.parse(
-						fieldMap.remove(TIMESTAMP)).getTime();
-			} catch (final Exception e) {
+				timeStamp = dateFormat.parse(fieldMap.remove(TIMESTAMP)).getTime();
+			}
+			catch (final Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -853,7 +650,8 @@ class Log4JReader {
 		Level levelImpl;
 		if (level == null) {
 			levelImpl = Level.DEBUG;
-		} else {
+		}
+		else {
 			// first try to resolve against custom level definition map, then
 			// fall back to regular levels
 			levelImpl = null;
@@ -883,17 +681,117 @@ class Log4JReader {
 
 		LocationInfo info = null;
 
-		if ((eventFileName != null) || (className != null)
-				|| (methodName != null) || (lineNumber != null)) {
-			info = new LocationInfo(eventFileName, className, methodName,
-					lineNumber);
-		} else {
+		if ((eventFileName != null) || (className != null) || (methodName != null) || (lineNumber != null)) {
+			info = new LocationInfo(eventFileName, className, methodName, lineNumber);
+		}
+		else {
 			info = LocationInfo.NA_LOCATION_INFO;
 		}
 
-		final LoggingEvent event = new LoggingEvent(null, logger, timeStamp, levelImpl, message, threadName,
-				new ThrowableInformation(emptyException), ndc, info, properties);
+		final org.apache.log4j.spi.LoggingEvent event = new org.apache.log4j.spi.LoggingEvent(null, logger, timeStamp,
+				levelImpl, message, threadName, new ThrowableInformation(emptyException), ndc, info, properties);
 
-		return event;
+		return new LoggingEvent4JForwarder(event);
+	}
+
+	private static String getTimeStampFormat(final String patternLayout) {
+		final int basicIndex = patternLayout.indexOf("%d");
+		if (basicIndex < 0) {
+			return null;
+		}
+
+		final int index = patternLayout.indexOf("%d{");
+		// %d - default
+		if (index < 0) {
+			return "yyyy-MM-dd HH:mm:ss,SSS";
+		}
+
+		final int length = patternLayout.substring(index).indexOf("}");
+		final String timestampFormat = patternLayout.substring(index + "%d{".length(), index + length);
+		if (timestampFormat.equals("ABSOLUTE")) {
+			return "HH:mm:ss,SSS";
+		}
+		if (timestampFormat.equals("ISO8601")) {
+			return "yyyy-MM-dd HH:mm:ss,SSS";
+		}
+		if (timestampFormat.equals("DATE")) {
+			return "dd MMM yyyy HH:mm:ss,SSS";
+		}
+		return timestampFormat;
+	}
+
+	private static String getFormatFromConverters(final List<LoggingEventPatternConverter> converters) {
+		final StringBuffer buffer = new StringBuffer();
+		for (final LoggingEventPatternConverter converter : converters) {
+			if (converter instanceof DatePatternConverter) {
+				buffer.append("TIMESTAMP");
+			}
+			else if (converter instanceof MessagePatternConverter) {
+				buffer.append("MESSAGE");
+			}
+			else if (converter instanceof LoggerPatternConverter) {
+				buffer.append("LOGGER");
+			}
+			else if (converter instanceof ClassNamePatternConverter) {
+				buffer.append("CLASS");
+			}
+			else if (converter instanceof RelativeTimePatternConverter) {
+				buffer.append("PROP(RELATIVETIME)");
+			}
+			else if (converter instanceof ThreadPatternConverter) {
+				buffer.append("THREAD");
+			}
+			else if (converter instanceof NDCPatternConverter) {
+				buffer.append("NDC");
+			}
+			else if (converter instanceof LiteralPatternConverter) {
+				final LiteralPatternConverter literal = (LiteralPatternConverter) converter;
+				// format shouldn't normally take a null, but we're getting a
+				// literal, so passing in the buffer will work
+				literal.format(null, buffer);
+			}
+			else if (converter instanceof SequenceNumberPatternConverter) {
+				buffer.append("PROP(log4jid)");
+			}
+			else if (converter instanceof LevelPatternConverter) {
+				buffer.append("LEVEL");
+			}
+			else if (converter instanceof MethodLocationPatternConverter) {
+				buffer.append("METHOD");
+			}
+			else if (converter instanceof FullLocationPatternConverter) {
+				buffer.append("PROP(locationInfo)");
+			}
+			else if (converter instanceof LineLocationPatternConverter) {
+				buffer.append("LINE");
+			}
+			else if (converter instanceof FileLocationPatternConverter) {
+				buffer.append("FILE");
+			}
+			else if (converter instanceof PropertiesPatternConverter) {
+				// PropertiesPatternConverter propertiesConverter =
+				// (PropertiesPatternConverter) converter;
+				// String option = propertiesConverter.getOption();
+				// if (option != null && option.length() > 0) {
+				// buffer.append("PROP(" + option + ")");
+				// } else {
+				buffer.append("PROP(PROPERTIES)");
+				// }
+			}
+			else if (converter instanceof LineSeparatorPatternConverter) {
+				// done
+			}
+		}
+		return buffer.toString();
+	}
+
+	private static String getLogFormatFromPatternLayout(final String patternLayout) {
+		final String input = OptionConverter.convertSpecialChars(patternLayout);
+		final List<LoggingEventPatternConverter> converters = new ArrayList<>();
+		final List<FormattingInfo> fields = new ArrayList<>();
+		final Map<?, ?> converterRegistry = null;
+
+		PatternParser.parse(input, converters, fields, converterRegistry, PatternParser.getPatternLayoutRules());
+		return getFormatFromConverters(converters);
 	}
 }

@@ -7,7 +7,7 @@ import java.io.IOException;
  * @param charSequence
  * @author madgaksha
  */
-class RandomAccessCharSequence extends ARandomAccessInputStream {
+class RandomAccessCharSequence extends ARandomAccessInput {
 	private final CharSequence charSequence;
 	private final int length;
 	private int currentPos;

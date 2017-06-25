@@ -1,10 +1,16 @@
 package de.homelab.madgaksha.log4jcat;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.easetech.easytest.annotation.DataLoader;
@@ -20,11 +26,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.homelab.madgaksha.log4jcat.IRandomAccessInput;
-import de.homelab.madgaksha.log4jcat.Log4J;
-import de.homelab.madgaksha.log4jcat.Log4JCat;
-import de.homelab.madgaksha.log4jcat.InputFactory;
 
 @RunWith(DataDrivenTestRunner.class)
 @DataLoader(filePaths = {"Log4JCatTest.xml"}, loaderType=LoaderType.XML, writeData = false)
@@ -58,16 +59,38 @@ public class Log4JCatTest {
 			@Param(name="patternLayout") final String patternLayout,
 			@Param(name="logFilePath") final String logFilePath,
 			@Param(name="date") final String dateString,
-			@Param(name="shouldPosition") final long shouldPosition) throws IOException, ParseException {
+			@Param(name="shouldPosition") final long shouldPosition,
+			@Param(name="shouldPositionString") final long shouldPositionString) throws IOException, ParseException {
 		final ZonedDateTime dateTime = ZonedDateTime.parse(dateString);
 		final Log4JCat cat = Log4J.of(patternLayout).get();
-		final long t1,t2;
+
+		long t1,t2;
 		try (final IRandomAccessInput stream = InputFactory.open(Log4JCatTest.class.getResourceAsStream(logFilePath))) {
 			t1 = new Date().getTime();
-			final long isPosition = cat.tail(stream, dateTime);
+			final long isPosition = cat.find(stream, Timestamp.of(dateTime));
+			t2 = new Date().getTime();
+			Assert.assertEquals(shouldPositionString, isPosition);
+		}
+		LOG.info("RAM find took " + (t2-t1)/1000f + "s.");
+
+		final File temp = File.createTempFile("Log4JCatTest", ".log");
+		try (final OutputStream output = new FileOutputStream(temp);
+			final InputStream input = Log4JCatTest.class.getResourceAsStream(logFilePath)) {
+			IOUtils.copy(input, output);
+		}
+		catch (final IOException e) {
+			temp.delete();
+			throw e;
+		}
+		try (final IRandomAccessInput stream = InputFactory.open(temp, StandardCharsets.UTF_8)) {
+			t1 = new Date().getTime();
+			final long isPosition = cat.find(stream, Timestamp.of(dateTime));
 			t2 = new Date().getTime();
 			Assert.assertEquals(shouldPosition, isPosition);
 		}
-		LOG.info("Tail took " + (t2-t1)/1000f + "s.");
+		finally {
+			temp.delete();
+		}
+		LOG.info("File find took " + (t2-t1)/1000f + "s.");
 	}
 }
