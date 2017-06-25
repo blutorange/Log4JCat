@@ -16,16 +16,19 @@ public class Sandbox {
 		System.out.println(6308028);
 
 		final ZonedDateTime date = ZonedDateTime.parse("2017-10-21T00:00:00+00:00[UTC]");
-		final File file = new File("/tmp/utf16.log");
-		final String encoding = "UTF-16";
+		final File file = new File("/tmp/large.log");
+		final String encoding = "UTF-8";
 
 		System.out.println("==Open file==");
 		try (final IRandomAccessInput stream = InputFactory.open(file, encoding)) {
 			System.out.println("Tail");
+			final long t1 = System.currentTimeMillis();
 			final long pos = cat.find(stream, Timestamp.of(date));
+			final long t2 = System.currentTimeMillis();
 			System.out.println(pos);
 			stream.seek(pos);
 			System.out.println(stream.readLine());
+			System.out.println("Took " + (t2-t1)/1000f + "s.");
 			System.out.println("Done");
 		}
 
@@ -36,10 +39,13 @@ public class Sandbox {
 		}
 		try (final IRandomAccessInput stream = InputFactory.open(fileData)) {
 			System.out.println("Tail");
+			final long t1 = System.currentTimeMillis();
 			final long pos = cat.find(stream, Timestamp.of(date));
+			final long t2 = System.currentTimeMillis();
 			System.out.println(pos);
 			stream.seek(pos);
 			System.out.println(stream.readLine());
+			System.out.println("Took " + (t2-t1)/1000f + "s.");
 			System.out.println("Done");
 		}
 

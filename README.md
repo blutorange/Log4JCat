@@ -50,6 +50,15 @@ Or clone the project and import it as a Maven project.
 		</dependency>
 ```
 
+## Performance
+
+I tried it with UTF-8 log files about 1GB in size and it performs pretty much
+as fast as your hard drive (0.01s-0.1s). Parsing the entire log file entry by
+entry takes around a minute. I'm pretty sure the log file parser can be
+optimized, but with a binary search O(log(n)), there's no need: I did not see
+any significant difference between a 500MB and 1GB file, so I suppose most of
+the time is taken up by initializing the file read.
+
 ## Documentation
 
 ### Trimming

@@ -204,6 +204,7 @@ abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 			int c = -1;
 			boolean eol = false;
 			while (!eol) {
+				// Decode more bytes when the buffer is empty.
 				if (!cbuffer.hasRemaining()) {
 					// Seek the file to the current position.
 					final long bytesProcessed = sb.length() == 0 ? 0 : charset.encode(sb.toString()).remaining() - (encBOM?bom.length:0);
@@ -220,7 +221,6 @@ abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 					buffer.position(abuffer.length-read);
 					// Decode the data into characters.
 					cbuffer.clear();
-//					decoder.reset();
 					Arrays.fill(cbuffer.array(), (char)-2);
 					decoder.decode(buffer, cbuffer, true);
 					cbuffer.position(0);
@@ -250,18 +250,24 @@ abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 					break;
 				}
 			}
+			cbuffer.position(abuffer.length);
 
 			if ((c == -1) && (sb.length() == 0)) {
 				return null;
 			}
 
+			// Get the actual length of bytes read.
+			// To do so, we need to reencode the decoded
+			// string. Which may lead to issues regarding
+			// unicode normalization... And we need to
+			// account for the BOM added by some encoders.
 			final String string = sb.toString();
 			final int eolBytes = eolChar.isEmpty() ? 0
 					: (charset.encode(eolChar).remaining() - (encBOM ? bom.length : 0));
 			final int readBytes = string.isEmpty() ? 0
 					: (charset.encode(string).remaining() - (encBOM ? bom.length : 0));
 			file.seek(initial + readBytes + eolBytes);
-			cbuffer.position(abuffer.length);
+
 			return string;
 		}
 
