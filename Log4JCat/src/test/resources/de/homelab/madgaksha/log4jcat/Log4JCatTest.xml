@@ -151,12 +151,25 @@
 		</TestRecord>
 		
 		<TestRecord id="14">
-			<Description>Unicode test.</Description>
+			<Description>UTF-8 test.</Description>
 			<InputData>
 				<Entry key="patternLayout"  value="[%-5p] %d %c - %m%n" />
 				<Entry key="logFilePath"    value="/de/homelab/madgaksha/log4jcat/utf8.log" />
 				<Entry key="date"           value="2017-10-21T00:00:00+00:00[UTC]" />
+				<Entry key="encoding" value="UTF-8" />
 				<Entry key="shouldPosition" value="5192574" />
+				<Entry key="shouldPositionString" value="3155018" />
+			</InputData>
+		</TestRecord>
+
+		<TestRecord id="15">
+			<Description>UTF-16 test.</Description>
+			<InputData>
+				<Entry key="patternLayout"  value="[%-5p] %d %c - %m%n" />
+				<Entry key="logFilePath"    value="/de/homelab/madgaksha/log4jcat/utf16.log" />
+				<Entry key="date"           value="2017-10-21T00:00:00+00:00[UTC]" />
+				<Entry key="encoding" value="UTF-16" />
+				<Entry key="shouldPosition" value="6310038" />
 				<Entry key="shouldPositionString" value="3155018" />
 			</InputData>
 		</TestRecord>

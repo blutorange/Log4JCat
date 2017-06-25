@@ -19,14 +19,18 @@ import java.util.function.BiFunction;
 abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 	private final static Map<String, BiFunction<RandomAccessFile, Charset, IRandomAccessInput>> map = new HashMap<>();
 	private final static BiFunction<RandomAccessFile, Charset, IRandomAccessInput> SINGLE = (raf,
-			charset) -> new R_SingleByte(raf, charset);
+			charset) -> new R_SingleByte(raf, charset, null, false);
 	private final static BiFunction<RandomAccessFile, Charset, IRandomAccessInput> MULTI_2 = (raf,
-			charset) -> new R_ConstantMultiByte(raf, charset, 2);
+			charset) -> new R_ConstantMultiByte(raf, charset, null, false, 2);
 	private final static BiFunction<RandomAccessFile, Charset, IRandomAccessInput> MULTI_4 = (raf,
-			charset) -> new R_ConstantMultiByte(raf, charset, 4);
+			charset) -> new R_ConstantMultiByte(raf, charset, null, false, 4);
+	private final static BiFunction<RandomAccessFile, Charset, IRandomAccessInput> UTF_16_BOM = (raf,
+			charset) -> new R_ConstantMultiByte(raf, charset, new byte[]{(byte)0xFF,(byte)0xFE}, true, 2);
+	private final static BiFunction<RandomAccessFile, Charset, IRandomAccessInput> UTF_32_BOM = (raf,
+			charset) -> new R_ConstantMultiByte(raf, charset, new byte[]{(byte)0xFF,(byte)0xFE,0,0}, false, 4);
 
 	static {
-		charset(StandardCharsets.UTF_8, (raf, charset) -> new R_UTF8(raf, charset));
+		charset(StandardCharsets.UTF_8, (raf, charset) -> new R_UTF8(raf, charset, null, false));
 
 		charset(StandardCharsets.US_ASCII, (raf, charset) -> new R_ASCII(raf));
 		charset(StandardCharsets.ISO_8859_1, SINGLE);
@@ -63,20 +67,20 @@ abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 		charset("windows-1258", SINGLE);
 		charset("Cp1258", SINGLE);
 
-		charset(StandardCharsets.UTF_16, MULTI_2);
-		charset(StandardCharsets.UTF_16BE, MULTI_2);
-		charset(StandardCharsets.UTF_16LE, MULTI_2);
-		charset("SJIS", MULTI_2);
-		charset("Shift_JIS", MULTI_2);
-		charset("x-JIS0208", MULTI_2);
-		charset("JIS0208", MULTI_2);
-		charset("JIS_X0212-1990", MULTI_2);
-		charset("JIS0212", MULTI_2);
+		charset("UTF-16", UTF_16_BOM);
+		charset("x-UTF-16LE-BOM", UTF_16_BOM);
+		charset("UTF-16BE", MULTI_2);
+		charset("UTF_16LE", MULTI_2);
+		charset("UnicodeBigUnmarked", MULTI_2);
+		charset("UnicodeLittleUnmarked", MULTI_2);
+
 		charset("Big5", MULTI_2);
 
 		charset("UTF-32", MULTI_4);
-		charset("UTF-32BE", MULTI_4);
-		charset("UTF-32LE", MULTI_4);
+		charset("X-UTF-32BE-BOM", UTF_32_BOM);
+		charset("X-UTF-32LE-BOM", UTF_32_BOM);
+		charset("UTF-16BE", MULTI_4);
+		charset("UTF_16LE", MULTI_4);
 	}
 
 	private static void charset(final Charset charset,
@@ -164,14 +168,18 @@ abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 		protected final CharBuffer cbuffer;
 		protected final CharsetDecoder decoder;
 		protected final Charset charset;
+		private final byte[] bom;
+		boolean encBOM;
 
-		public R_CharsetAware(final RandomAccessFile raf, final Charset charset) {
-			this(raf, charset, 128);
+		public R_CharsetAware(final RandomAccessFile raf, final Charset charset, final byte[] bom, final boolean encBOM) {
+			this(raf, charset, bom, encBOM, 128);
 		}
 
-		public R_CharsetAware(final RandomAccessFile raf, final Charset charset, final int bufferSize) {
+		public R_CharsetAware(final RandomAccessFile raf, final Charset charset, final byte[] bom, final boolean encBOM, final int bufferSize) {
 			super(raf);
 			this.charset = charset;
+			this.bom = bom;
+			this.encBOM = encBOM;
 			abuffer = new byte[bufferSize];
 			buffer = ByteBuffer.allocate(bufferSize);
 			cbuffer = CharBuffer.allocate(bufferSize);
@@ -198,7 +206,7 @@ abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 			while (!eol) {
 				if (!cbuffer.hasRemaining()) {
 					// Seek the file to the current position.
-					final long bytesProcessed = charset.encode(sb.toString()).remaining();
+					final long bytesProcessed = sb.length() == 0 ? 0 : charset.encode(sb.toString()).remaining() - (encBOM?bom.length:0);
 					file.seek(initial+bytesProcessed);
 					// Read data into the buffer.
 					final int read = file.read(abuffer);
@@ -212,7 +220,7 @@ abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 					buffer.position(abuffer.length-read);
 					// Decode the data into characters.
 					cbuffer.clear();
-					decoder.reset();
+//					decoder.reset();
 					Arrays.fill(cbuffer.array(), (char)-2);
 					decoder.decode(buffer, cbuffer, true);
 					cbuffer.position(0);
@@ -248,30 +256,52 @@ abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 			}
 
 			final String string = sb.toString();
-			final int eolBytes = eolChar.isEmpty() ? 0 : charset.encode(eolChar).remaining();
-			final int readBytes = charset.encode(string).remaining();
+			final int eolBytes = eolChar.isEmpty() ? 0
+					: (charset.encode(eolChar).remaining() - (encBOM ? bom.length : 0));
+			final int readBytes = string.isEmpty() ? 0
+					: (charset.encode(string).remaining() - (encBOM ? bom.length : 0));
 			file.seek(initial + readBytes + eolBytes);
 			cbuffer.position(abuffer.length);
 			return string;
 		}
+
+		protected void skipBOM() throws IOException {
+			if (bom != null && file.getFilePointer() == 0) {
+				final byte[] start = new byte[bom.length];
+				if (file.read(start) == start.length) {
+					if (Arrays.equals(start, bom)) {
+						final ByteBuffer bb = ByteBuffer.wrap(bom);
+						cbuffer.clear();
+						decoder.decode(bb, cbuffer, false);
+						cbuffer.position(abuffer.length);
+					}
+					else {
+						file.seek(0);
+					}
+				}
+				else {
+					file.seek(0);
+				}
+			}
+		}
 	}
 
 	private static class R_SingleByte extends R_CharsetAware {
-		public R_SingleByte(final RandomAccessFile raf, final Charset charset) {
-			super(raf, charset);
+		public R_SingleByte(final RandomAccessFile raf, final Charset charset, final byte[] bom,final boolean encBOM) {
+			super(raf, charset, bom, encBOM);
 		}
 
 		@Override
 		protected void seekToNextCodepoint() throws IOException {
-			// Single byte, not seeking necessary.
+			skipBOM();
 		}
 	}
 
 	private static class R_ConstantMultiByte extends R_CharsetAware {
 		private final long count;
 
-		public R_ConstantMultiByte(final RandomAccessFile raf, final Charset charset, final long count) {
-			super(raf, charset);
+		public R_ConstantMultiByte(final RandomAccessFile raf, final Charset charset, final byte[] bom, final boolean encBOM, final long count) {
+			super(raf, charset, bom, encBOM);
 			this.count = count;
 		}
 
@@ -281,12 +311,13 @@ abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 			if (offset != 0) {
 				seek(tell() + count - offset);
 			}
+			skipBOM();
 		}
 	}
 
 	private static class R_UTF8 extends R_CharsetAware {
-		public R_UTF8(final RandomAccessFile raf, final Charset charset) {
-			super(raf, charset);
+		public R_UTF8(final RandomAccessFile raf, final Charset charset, final byte[] bom, final boolean encBOM) {
+			super(raf, charset, bom, encBOM);
 		}
 
 		@Override
@@ -299,6 +330,7 @@ abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 			}
 			while (b != -1 && (b & 0b10000000) != 0);
 			file.seek(pos);
+			skipBOM();
 		}
 	}
 

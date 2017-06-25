@@ -8,6 +8,7 @@ package de.homelab.madgaksha.log4jcat;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.slf4j.event.LoggingEvent;
@@ -27,6 +28,24 @@ public final class Log4JCat {
 	Log4JCat(final ILogReaderFactory factory, final long threshold) {
 		this.factory = factory;
 		this.threshold = threshold;
+	}
+
+	/**
+	 * For your convenience, if you ever need to access each logging event
+	 * serially. Iterates over each logging event and calls the given
+	 * predicate.
+	 * @param input Log file input.
+	 * @param predicate Consumer for each logging event. When it returns false, the iteration is ended.
+	 * @throws IOException When the file could not be read.
+	 */
+	public void each(@NonNull final IRandomAccessInput input, @NonNull final Predicate<LoggingEvent> predicate)
+			throws IOException {
+		LoggingEvent event;
+		final ILogReader logReader = factory.create();
+		while ((event = logReader.processSingle(input)) != null) {
+			if (!predicate.test(event))
+				break;
+		}
 	}
 
 	/**

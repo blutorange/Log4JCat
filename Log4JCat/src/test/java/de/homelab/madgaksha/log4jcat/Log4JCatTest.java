@@ -5,8 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
+import java.nio.charset.Charset;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
@@ -59,18 +58,22 @@ public class Log4JCatTest {
 			@Param(name="patternLayout") final String patternLayout,
 			@Param(name="logFilePath") final String logFilePath,
 			@Param(name="date") final String dateString,
+			@Param(name="encoding") final String encoding,
 			@Param(name="shouldPosition") final long shouldPosition,
-			@Param(name="shouldPositionString") final long shouldPositionString) throws IOException, ParseException {
+			@Param(name="shouldPositionString") final long shouldPositionString) throws IOException {
+
 		final ZonedDateTime dateTime = ZonedDateTime.parse(dateString);
 		final Log4JCat cat = Log4J.of(patternLayout).get();
+		final Charset charset = Charset.forName(encoding != null ? encoding : "UTF-8");
 
 		long t1,t2;
-		try (final IRandomAccessInput stream = InputFactory.open(Log4JCatTest.class.getResourceAsStream(logFilePath))) {
+		try (final IRandomAccessInput stream = InputFactory.open(Log4JCatTest.class.getResourceAsStream(logFilePath), charset)) {
 			t1 = new Date().getTime();
 			final long isPosition = cat.find(stream, Timestamp.of(dateTime));
 			t2 = new Date().getTime();
 			Assert.assertEquals(shouldPositionString, isPosition);
 		}
+		Assert.assertTrue(t2-t1<1000f);
 		LOG.info("RAM find took " + (t2-t1)/1000f + "s.");
 
 		final File temp = File.createTempFile("Log4JCatTest", ".log");
@@ -82,7 +85,7 @@ public class Log4JCatTest {
 			temp.delete();
 			throw e;
 		}
-		try (final IRandomAccessInput stream = InputFactory.open(temp, StandardCharsets.UTF_8)) {
+		try (final IRandomAccessInput stream = InputFactory.open(temp, charset)) {
 			t1 = new Date().getTime();
 			final long isPosition = cat.find(stream, Timestamp.of(dateTime));
 			t2 = new Date().getTime();
@@ -91,6 +94,7 @@ public class Log4JCatTest {
 		finally {
 			temp.delete();
 		}
+		Assert.assertTrue(t2-t1<1000f);
 		LOG.info("File find took " + (t2-t1)/1000f + "s.");
 	}
 }
