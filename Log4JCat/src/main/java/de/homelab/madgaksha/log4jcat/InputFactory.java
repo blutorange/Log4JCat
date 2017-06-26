@@ -10,7 +10,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -267,6 +266,6 @@ public final class InputFactory {
 	}
 
 	private static Charset getCharset(final String encoding) {
-		return encoding != null ? Charsets.toCharset(encoding) : Charset.defaultCharset();
+		return encoding != null ? Charset.forName(encoding) : Charset.defaultCharset();
 	}
 }
