@@ -67,6 +67,23 @@ The following methods are available for log file trimming, provided by Log4JCat:
 
 * long find(IRandomAccessInput, long) Takes a log file and a UNIX timestamp. Some log entries lie before the given date, and some lie after the given date. This method finds the first log entry that lies after or on the given date. Call this method twice to perform a head-tail trim.
 
+### Appender
+
+There are also some utility methods available in the class Cyperus. 
+
+These all take the log file from an Appender or Logger, filter the log entries
+and write them to the given OutputStream. The Appender must be a FileAppender.
+RollingFileAppender with multiple older files is supported. When a Logger is
+passed, it takes all its FileAppenders, filters their log files and writes them
+to the OutputStream.
+
+* Cyperus.head(Appender, OutputStream, long)
+* Cyperus.head(Logger, OutputStream, long)
+* Cyperus.trim(Appender, OutputStream, long, long)
+* Cyperus.trim(Logger, OutputStream, long, long)
+* Cyperus.tail(Appender, OutputStream, long)
+* Cyperus.tail(Logger, OutputStream, long)
+
 ### Timestamp
 
 Timestamp is a small set of utility methods for using other date-time objects.

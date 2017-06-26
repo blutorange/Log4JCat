@@ -7,7 +7,6 @@
 package de.homelab.madgaksha.log4jcat;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -22,6 +21,7 @@ import org.slf4j.event.LoggingEvent;
  * @see Log4J
  */
 public final class Log4JCat {
+
 	private final long threshold;
 	private final ILogReaderFactory factory;
 
@@ -128,25 +128,6 @@ public final class Log4JCat {
 			input.seek(input.tell() - 1);
 			input.readLine();
 		}
-	}
-
-	/**
-	 * Seeks the stream to the nearest position starting a valid UTF-8 code
-	 * point, ie. a byte with the highest bit 0.
-	 *
-	 * @param raf
-	 *            Stream to seek.
-	 * @throws IOException
-	 */
-	private void seekToStartOfUtf8(final RandomAccessFile raf) throws IOException {
-		byte b;
-		long pos;
-		do {
-			pos = raf.getFilePointer();
-			b = raf.readByte();
-		}
-		while ((b & 0b10000000) != 0);
-		raf.seek(pos);
 	}
 
 	private int isStartPosition(final ILogReader logReader, final IRandomAccessInput input, final long target)

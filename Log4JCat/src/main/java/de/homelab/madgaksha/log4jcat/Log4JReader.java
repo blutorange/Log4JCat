@@ -17,7 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Stack;
 import java.util.TimeZone;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -156,6 +155,8 @@ class Log4JReader implements ILogReader {
 	 */
 	private final ArrayList<String> keywords = new ArrayList<>();
 
+	private final static int LIMIT_MESSAGE_LINES = 1000;
+
 	private static final String PROP_START = "PROP(";
 	private static final String PROP_END = ")";
 
@@ -192,7 +193,7 @@ class Log4JReader implements ILogReader {
 
 	private HashMap<String, String> currentMap;
 	private ArrayList<String> additionalLines;
-	private Stack<String> additionalLinesStack;
+//	private Stack<String> additionalLinesStack;
 	private ArrayList<String> matchingKeywords;
 
 	private String regexp;
@@ -253,21 +254,21 @@ class Log4JReader implements ILogReader {
 		return message.toString();
 	}
 
-	private String buildMessageStack(final String firstMessageLine) {
-		if (additionalLinesStack.size() == 0) {
-			return firstMessageLine;
-		}
-		final StringBuffer message = new StringBuffer();
-		if (firstMessageLine != null) {
-			message.append(firstMessageLine);
-		}
-		final int linesToProcess = additionalLinesStack.size();
-		for (int i = 0; i < linesToProcess; i++) {
-			message.append(newLine);
-			message.append(additionalLinesStack.get(i));
-		}
-		return message.toString();
-	}
+//	private String buildMessageStack(final String firstMessageLine) {
+//		if (additionalLinesStack.size() == 0) {
+//			return firstMessageLine;
+//		}
+//		final StringBuffer message = new StringBuffer();
+//		if (firstMessageLine != null) {
+//			message.append(firstMessageLine);
+//		}
+//		final int linesToProcess = additionalLinesStack.size();
+//		for (int i = 0; i < linesToProcess; i++) {
+//			message.append(newLine);
+//			message.append(additionalLinesStack.get(i));
+//		}
+//		return message.toString();
+//	}
 
 	/**
 	 * Construct a logging event from currentMap and additionalLines
@@ -292,20 +293,20 @@ class Log4JReader implements ILogReader {
 		return event;
 	}
 
-	private LoggingEvent buildEventStack(final HashMap<String, String> currentMap) {
-		if (currentMap.size() == 0) {
-			additionalLinesStack.clear();
-			return null;
-		}
-		// the current map contains fields - build an event
-		// messages are listed before exceptions in additional lines
-		if (additionalLinesStack.size() > 0) {
-			currentMap.put(MESSAGE, buildMessageStack(currentMap.get(MESSAGE)));
-		}
-		final LoggingEvent event = convertToEvent(currentMap);
-		additionalLinesStack.clear();
-		return event;
-	}
+//	private LoggingEvent buildEventStack(final HashMap<String, String> currentMap) {
+//		if (currentMap.size() == 0) {
+//			additionalLinesStack.clear();
+//			return null;
+//		}
+//		// the current map contains fields - build an event
+//		// messages are listed before exceptions in additional lines
+//		if (additionalLinesStack.size() > 0) {
+//			currentMap.put(MESSAGE, buildMessageStack(currentMap.get(MESSAGE)));
+//		}
+//		final LoggingEvent event = convertToEvent(currentMap);
+//		additionalLinesStack.clear();
+//		return event;
+//	}
 
 	@Override
 	public LoggingEvent processSingle(final IRandomAccessInput input) throws IOException {
@@ -313,7 +314,7 @@ class Log4JReader implements ILogReader {
 		String line;
 		boolean foundEvent = false;
 		long pos = input.tell();
-		additionalLinesStack.clear();
+//		additionalLinesStack.clear();
 		currentMap.clear();
 		while ((line = input.readLine()) != null) {
 			// skip empty line entries
@@ -327,7 +328,9 @@ class Log4JReader implements ILogReader {
 				currentMap.putAll(processEvent(eventMatcher.toMatchResult()));
 			}
 			else if (foundEvent) {
-				additionalLines.add(line);
+				if (additionalLines.size() < LIMIT_MESSAGE_LINES) {
+					additionalLines.add(line);
+				}
 			}
 			pos = input.tell();
 		}
@@ -342,7 +345,7 @@ class Log4JReader implements ILogReader {
 		Matcher eventMatcher;
 		String line;
 		long pos;
-		additionalLinesStack.clear();
+//		additionalLinesStack.clear();
 		currentMap.clear();
 		pos = input.tell();
 		while ((line = input.readLine()) != null) {
@@ -403,7 +406,7 @@ class Log4JReader implements ILogReader {
 	private void initialize(final Locale locale, final TimeZone timeZone) {
 		currentMap = new HashMap<>();
 		additionalLines = new ArrayList<>();
-		additionalLinesStack = new Stack<>();
+//		additionalLinesStack = new Stack<>();
 		matchingKeywords = new ArrayList<>();
 
 		if (timestampFormat != null) {

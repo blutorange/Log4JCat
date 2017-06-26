@@ -17,6 +17,8 @@ import java.util.function.BiFunction;
 
 
 abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
+	private final static int LIMIT_LINE_CHARACTERS = 10000;
+
 	private final static Map<String, BiFunction<RandomAccessFile, Charset, IRandomAccessInput>> map = new HashMap<>();
 	private final static BiFunction<RandomAccessFile, Charset, IRandomAccessInput> SINGLE = (raf,
 			charset) -> new R_SingleByte(raf, charset, null, false);
@@ -203,7 +205,7 @@ abstract class ARandomAccessFileForwarder extends ARandomAccessInput {
 			final StringBuilder sb = new StringBuilder();
 			int c = -1;
 			boolean eol = false;
-			while (!eol) {
+			while (!eol && sb.length() < LIMIT_LINE_CHARACTERS) {
 				// Decode more bytes when the buffer is empty.
 				if (!cbuffer.hasRemaining()) {
 					// Seek the file to the current position.
