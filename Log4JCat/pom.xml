@@ -5,7 +5,7 @@
 
 	<groupId>com.github.blutorange</groupId>
 	<artifactId>log4jcat</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.1</version>
 
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Used for quickly trimming log files from Log4J with a PatternLayout to a certain time range.</description>
@@ -47,7 +47,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/blutorange/Log4JCat.git</connection>
 		<developerConnection>scm:git:ssh://github.com:blutorange/Log4JCat.git</developerConnection>
-		<url>http://github.com/blutorange/Log4JCat/tree/master</url>
+		<url>https://github.com/blutorange/Log4JCat/tree/master</url>
 	</scm>
 
 	<dependencies>
