@@ -42,6 +42,7 @@ public final class Log4J {
 	 *            Time zone to use.
 	 * @return this for chaining.
 	 */
+	@NonNull
 	public Log4J timeZone(@Nullable final TimeZone timeZone) {
 		this.timeZone = timeZone;
 		return this;
@@ -59,6 +60,7 @@ public final class Log4J {
 	 * @return this for chaining.
 	 * @see TimeZone#getTimeZone(String)
 	 */
+	@NonNull
 	public Log4J timeZone(@Nullable final String timeZone) {
 		this.timeZone = timeZone != null ? TimeZone.getTimeZone(timeZone) : null;
 		return this;
@@ -72,6 +74,7 @@ public final class Log4J {
 	 *            Locale to use.
 	 * @return this for chaining.
 	 */
+	@NonNull
 	public Log4J locale(@Nullable final Locale locale) {
 		this.locale = locale;
 		return this;
@@ -86,6 +89,7 @@ public final class Log4J {
 	 *            The threshold in bytes.
 	 * @return this for chaining.
 	 */
+	@NonNull
 	public Log4J threshold(final long threshold) {
 		this.threshold = threshold;
 		return this;
@@ -94,6 +98,7 @@ public final class Log4J {
 	/**
 	 * @return The actual log file trimmer with the configured options.
 	 */
+	@NonNull
 	public Log4JCat get() {
 		if (threshold == 0)
 			threshold = DEFAULT_THRESHOLD;

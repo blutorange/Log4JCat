@@ -12,6 +12,22 @@
 	<packaging>jar</packaging>
 	<url>https://github.com/blutorange/Log4JCat</url>
 
+	<properties>
+		<nexus-staging-version>1.6.8</nexus-staging-version>
+		<maven-gpg-plugin-version>1.6</maven-gpg-plugin-version>
+		<maven-compiler-plugin-version>3.5.1</maven-compiler-plugin-version>
+		<maven-resources-plugin-version>2.6</maven-resources-plugin-version>
+		<maven-javadoc-plugin-version>2.10.4</maven-javadoc-plugin-version>
+		<maven-source-plugin-version>3.0.1</maven-source-plugin-version>
+		<joda-time-version>[1.0,)</joda-time-version>
+		<apache-commons-lang3-version>[3.0,)</apache-commons-lang3-version>
+		<commons-io-version>[2.3,)</commons-io-version>
+		<log4j-version>[1.2.16,)</log4j-version>
+		<slf4j-api-version>[1.7.15,)</slf4j-api-version>
+		<eclipse-annotation-version>[2.0.0,)</eclipse-annotation-version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>		
+	</properties>
+
 	<licenses>
 		<license>
 			<name>The Apache License, Version 2.0</name>
@@ -34,46 +50,42 @@
 		<url>http://github.com/blutorange/Log4JCat/tree/master</url>
 	</scm>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>[1.2.16,)</version>
+			<version>${log4j-version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>[1.7.15,)</version>
+			<version>${slf4j-api-version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>[2.3,)</version>
+			<version>${commons-io-version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>[3.0,)</version>
+			<version>${apache-commons-lang3-version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.eclipse.jdt/org.eclipse.jdt.annotation -->
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.annotation</artifactId>
-			<version>[2.0.0,)</version>
+			<version>${eclipse-annotation-version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/joda-time/joda-time -->
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>[1.0,)</version>
+			<version>${joda-time-version}</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/junit/junit -->
@@ -92,6 +104,14 @@
 		</dependency>
 	</dependencies>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
@@ -103,9 +123,21 @@
 
 		<plugins>
 			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>${nexus-staging-version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.0.1</version>
+				<version>${maven-source-plugin-version}</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -119,7 +151,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.4</version>
+				<version>${maven-javadoc-plugin-version}</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -133,7 +165,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.6</version>
+				<version>${maven-gpg-plugin-version}</version>
 				<executions>
 					<execution>
 						<id>sign-artifacts</id>
@@ -147,7 +179,7 @@
 
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.5.1</version>
+				<version>${maven-compiler-plugin-version}</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<source>1.8</source>
@@ -157,7 +189,7 @@
 
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.6</version>
+				<version>${maven-resources-plugin-version}</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
 				</configuration>

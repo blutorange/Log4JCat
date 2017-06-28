@@ -4,10 +4,18 @@ import java.io.Closeable;
 import java.io.IOException;
 
 /**
+ * <p>
  * The interface for reading the data of the log file to be trimmed.
- * As the algorithm uses a binary search, it must support random access.
- * Implementation are responsible for the encoding.
+ * As the algorithm uses a binary search, it requires the input stream to
+ * support random access. Implementation are responsible for handling
+ * the encoding.
+ * </p>
+ * <p>
+ * Usually you do not need to implement this yourself, you can use
+ * the factory methods provided by {@link InputFactory}.
+ * </p>
  * @author madgaksha
+ * @see InputFactory
  */
 public interface IRandomAccessInput extends Closeable {
 	/**

@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
@@ -41,6 +42,7 @@ public final class InputFactory {
 	 *            string when <code>null</code>.
 	 * @return A random access input for log file trimming.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final CharSequence charSequence) {
 		if (charSequence == null)
 			return new RandomAccessDummy();
@@ -56,6 +58,7 @@ public final class InputFactory {
 	 * @return A random access input for log file trimming.
 	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final Path path) throws UnsupportedEncodingException {
 		return open(path.toFile(), getCharset(null));
 	}
@@ -70,6 +73,7 @@ public final class InputFactory {
 	 * @return A random access input for log file trimming.
 	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final Path path, @Nullable final String encoding)
 			throws UnsupportedEncodingException {
 		return open(path, getCharset(encoding));
@@ -85,6 +89,7 @@ public final class InputFactory {
 	 * @return A random access input for log file trimming.
 	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final Path path, @Nullable final Charset charset)
 			throws UnsupportedEncodingException {
 		if (path == null)
@@ -101,6 +106,7 @@ public final class InputFactory {
 	 * @return A random access input for log file trimming.
 	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final File file) throws UnsupportedEncodingException {
 		return open(file, getCharset(null));
 	}
@@ -115,6 +121,7 @@ public final class InputFactory {
 	 * @return A random access input for log file trimming.
 	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final File file, @Nullable final String encoding)
 			throws UnsupportedEncodingException {
 		return open(file, getCharset(encoding));
@@ -130,6 +137,7 @@ public final class InputFactory {
 	 * @return A random access input for log file trimming.
 	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
+	@NonNull
 	@SuppressWarnings("resource") // We only open the stream.
 	public static IRandomAccessInput open(@Nullable final File file, @Nullable final Charset charset)
 			throws UnsupportedEncodingException {
@@ -154,6 +162,7 @@ public final class InputFactory {
 	 * @return A random access input for log file trimming.
 	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final RandomAccessFile randomAccessFile)
 			throws UnsupportedEncodingException {
 		return open(randomAccessFile, getCharset(null));
@@ -169,6 +178,7 @@ public final class InputFactory {
 	 * @return A random access input for log file trimming.
 	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final RandomAccessFile randomAccessFile, final String encoding)
 			throws UnsupportedEncodingException {
 		return open(randomAccessFile, getCharset(encoding));
@@ -184,6 +194,7 @@ public final class InputFactory {
 	 * @return A random access input for log file trimming.
 	 * @throws UnsupportedEncodingException When the charset is not supported.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final RandomAccessFile randomAccessFile,
 			@Nullable final Charset charset) throws UnsupportedEncodingException {
 		if (randomAccessFile == null)
@@ -205,6 +216,7 @@ public final class InputFactory {
 	 * @throws IOException
 	 *             When the stream could not be read.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final InputStream stream, @Nullable final String encoding)
 			throws IOException {
 		return open(stream, getCharset(encoding));
@@ -224,6 +236,7 @@ public final class InputFactory {
 	 * @throws IOException
 	 *             When the stream could not be read.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final InputStream stream, @Nullable final Charset charset)
 			throws IOException {
 		if (stream == null)
@@ -243,6 +256,7 @@ public final class InputFactory {
 	 * @throws IOException
 	 *             When the stream could not be read.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final InputStream stream) throws IOException {
 		return open(stream, (Charset) null);
 	}
@@ -258,6 +272,7 @@ public final class InputFactory {
 	 * @throws IOException
 	 *             When the stream could not be read.
 	 */
+	@NonNull
 	public static IRandomAccessInput open(@Nullable final Reader reader) throws IOException {
 		if (reader == null)
 			return new RandomAccessDummy();

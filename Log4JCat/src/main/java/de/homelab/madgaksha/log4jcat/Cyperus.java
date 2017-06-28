@@ -57,7 +57,7 @@ public final class Cyperus {
 	 *             When the input could not be read from or the output not
 	 *             written to.
 	 */
-	public static boolean trim(@NonNull final Appender appender, final OutputStream output, final long start,
+	public static boolean trim(@NonNull final Appender appender, @NonNull final OutputStream output, final long start,
 			final long end) throws IOException {
 		return processAppender(appender, output, start, end, Cyperus::trim);
 	}
@@ -80,7 +80,7 @@ public final class Cyperus {
 	 *             When the input could not be read from or the output not
 	 *             written to.
 	 */
-	public static boolean tail(@NonNull final Appender appender, final OutputStream output, final long date)
+	public static boolean tail(@NonNull final Appender appender, @NonNull final OutputStream output, final long date)
 			throws IOException {
 		return processAppender(appender, output, date, date + 1, Cyperus::tail);
 	}
@@ -103,7 +103,7 @@ public final class Cyperus {
 	 *             When the input could not be read from or the output not
 	 *             written to.
 	 */
-	public static boolean head(@NonNull final Appender appender, final OutputStream output, final long date)
+	public static boolean head(@NonNull final Appender appender, @NonNull final OutputStream output, final long date)
 			throws IOException {
 		return processAppender(appender, output, date, date + 1, Cyperus::head);
 	}

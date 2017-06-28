@@ -38,17 +38,7 @@ public class Sandbox {
 
 ## Installation
 
-Download [the JAR](https://github.com/blutorange/Log4JCat/blob/master/Log4JCat/release/log4jcat-0.1.jar).
-
-Or clone the project and import it as a Maven project.
-
-```xml
-		<dependency>
-			<groupId>de.homelab.madgaksha</groupId>
-			<artifactId>log4jcat</artifactId>
-			<version>0.1</version>
-		</dependency>
-```
+Or clone the project and run a maven package.
 
 ## Performance
 

@@ -20,8 +20,31 @@ import org.slf4j.LoggerFactory;
 
 public class Sandbox {
 	public static void main(final String[] args) throws Exception {
-		multi();
+		//multi();
+		System.out.println(test(".478-"));
 		System.exit(0);
+	}
+
+	static float test(final String s) {
+		boolean dot = false;
+		final long len = s.length();
+		try {
+			for (int i = 0 ;  i < len; ++i) {
+				switch (s.charAt(i)) {
+				case '.':
+					if (dot)
+						return Float.parseFloat(s.substring(0, i));
+					dot = true;
+					break;
+				case '-':
+					return Float.parseFloat(s.substring(0, i));
+				}
+			}
+			return Float.parseFloat(s);
+		}
+		catch (final NumberFormatException ignored) {
+			return Float.NaN;
+		}
 	}
 
 	static void multi() throws IOException {
