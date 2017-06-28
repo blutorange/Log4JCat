@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+
+<easytest:InputTestData xmlns:easytest="urn:org:easetech:easytest:1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:org:easetech:easytest:1.0 testDataSchema.xsd">
+
+	<TestMethod name="testTrimAppender">
+		<Description>Tests whether the tail function works correctly.</Description>
+		
+		<TestRecord id="1">
+			<Description>Trimming when start and end are in two adjacent files.</Description>
+			<InputData>
+				<Entry key="baseName"       value="log.out" />
+				<Entry key="logPath"        value="/com/github/blutorange/log4jcat/" />
+				<Entry key="encoding"       value="UTF-8" />
+				<Entry key="dateStart"      value="2017-06-26T19:14:02+00:00[UTC]" />
+				<Entry key="dateEnd"        value="2017-06-26T19:14:56+00:00[UTC]" />
+				<Entry key="offsetStart"    value="0" />
+				<Entry key="lengthStart"    value="69" />
+				<Entry key="offsetEnd"      value="410" />
+				<Entry key="lengthEnd"      value="69" />
+				<Entry key="expectedLength" value="76670" />
+				<Entry key="expectedFirst"  value="[ERROR] 2017-06-26 19:14:02,263 de.homelab.madgaksha.log4jcat.Sandbox" />
+				<Entry key="expectedLast"   value="[ERROR] 2017-06-26 19:14:55,968 de.homelab.madgaksha.log4jcat.Sandbox" />
+				
+			</InputData>
+		</TestRecord>
+		<TestRecord id="2">
+			<Description>Trimming when start and end are in the same file.</Description>
+			<InputData>
+				<Entry key="baseName"       value="log.out" />
+				<Entry key="logPath"        value="/com/github/blutorange/log4jcat/" />
+				<Entry key="encoding"       value="UTF-8" />
+				<Entry key="dateStart"      value="2017-06-26T19:16:04+00:00[UTC]" />
+				<Entry key="dateEnd"        value="2017-06-26T19:17:02+00:00[UTC]" />
+				<Entry key="offsetStart"    value="0" />
+				<Entry key="lengthStart"    value="69" />
+				<Entry key="offsetEnd"      value="410" />
+				<Entry key="lengthEnd"      value="69" />
+				<Entry key="expectedLength" value="78310" />
+				<Entry key="expectedFirst"  value="[ERROR] 2017-06-26 19:16:04,030 de.homelab.madgaksha.log4jcat.Sandbox" />
+				<Entry key="expectedLast"   value="[ERROR] 2017-06-26 19:17:01,955 de.homelab.madgaksha.log4jcat.Sandbox" />
+				
+			</InputData>
+		</TestRecord>
+		<TestRecord id="3">
+			<Description>Trimming when start and end are in two different non-adjacent files.</Description>
+			<InputData>
+				<Entry key="baseName"       value="log.out" />
+				<Entry key="logPath"        value="/com/github/blutorange/log4jcat/" />
+				<Entry key="encoding"       value="UTF-8" />
+				<Entry key="dateStart"      value="2017-06-26T19:13:18+00:00[UTC]" />
+				<Entry key="dateEnd"        value="2017-06-26T19:15:13+00:00[UTC]" />
+				<Entry key="offsetStart"    value="0" />
+				<Entry key="lengthStart"    value="69" />
+				<Entry key="offsetEnd"      value="410" />
+				<Entry key="lengthEnd"      value="69" />
+				<Entry key="expectedLength" value="161539" />
+				<Entry key="expectedFirst"  value="[ERROR] 2017-06-26 19:13:18,243 de.homelab.madgaksha.log4jcat.Sandbox" />
+				<Entry key="expectedLast"   value="[ERROR] 2017-06-26 19:15:12,825 de.homelab.madgaksha.log4jcat.Sandbox" />
+			</InputData>
+		</TestRecord>		
+		<TestRecord id="4">
+			<Description>Start equals the end.</Description>
+			<InputData>
+				<Entry key="baseName"       value="log.out" />
+				<Entry key="logPath"        value="/com/github/blutorange/log4jcat/" />
+				<Entry key="encoding"       value="UTF-8" />
+				<Entry key="dateStart"      value="2017-06-26T19:14:34+00:00[UTC]" />
+				<Entry key="dateEnd"        value="2017-06-26T19:14:34+00:00[UTC]" />
+				<Entry key="offsetStart"    value="0" />
+				<Entry key="lengthStart"    value="0" />
+				<Entry key="offsetEnd"      value="0" />
+				<Entry key="lengthEnd"      value="0" />
+				<Entry key="expectedLength" value="0" />
+				<Entry key="expectedFirst"  value="" />
+				<Entry key="expectedLast"   value="" />
+			</InputData>
+		</TestRecord>		
+	</TestMethod>
+
+</easytest:InputTestData>

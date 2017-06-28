@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.homelab.madgaksha</groupId>
+	<groupId>com.github.blutorange</groupId>
 	<artifactId>log4jcat</artifactId>
-	<version>0.1</version>
+	<version>0.1-SNAPSHOT</version>
 
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Used for quickly trimming log files from Log4J with a PatternLayout to a certain time range.</description>
@@ -109,6 +109,10 @@
 			<id>ossrh</id>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+		</repository>
 	</distributionManagement>
 
 
