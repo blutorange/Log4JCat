@@ -38,6 +38,16 @@ public class Sandbox {
 
 ## Installation
 
+Use maven central:
+
+```xml
+<dependency>
+  <groupId>com.github.blutorange</groupId>
+  <artifactId>log4jcat</artifactId>
+  <version>0.1</version>
+</dependency>
+```
+
 Or clone the project and run a maven package.
 
 ## Performance
